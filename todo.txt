@@ -1,2 +1,16 @@
+PSA secrets
 https://github.com/prototux/PSA-RE/blob/master/sandbox/uds_auth_algorithm.c
+
+kernel can
+https://www.kernel.org/doc/Documentation/networking/can.txt
+
+raw can, but it uses recv from sockfd instead of recvmsg. anyway nice example
+https://github.com/JCube001/socketcan-demo/blob/master/src/socketcan-raw-demo.cpp
+
+https://github.com/autosportlabs/OBD2CAN
+
+
+nice french
+https://www.lesamisdelaprog.com/lecture-ecriture-ecus/5925-tuto-bdm-sid803-803a-psa.html
+https://www.lesamisdelaprog.com/lecture-ecriture-ecus/2179-bdm-motorola-mpcxxx-galletto-2-bdm100-dimsport-cmd.html
 
