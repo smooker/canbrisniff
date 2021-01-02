@@ -40,6 +40,7 @@ struct thread_data {
     uint8_t* msg;
     const char* interface;
     int must_exit=0;
+    thread_data *other_td;
 };
 
 thread_data td1;
@@ -138,6 +139,13 @@ void *listener(void *data)
             sprint_canframe(buf, &frame, 1, 16);
     //        std::this_thread::sleep_for (std::chrono::seconds(1));
             printf("%d:%s:%s\n", my_data->thread_id, my_data->interface, buf);
+            {
+//                int nbytes = sendmsg(my_data->other_td->sockfd, &msg, 0);
+//                int nbytes = send(my_data->other_td->sockfd, &frame, frame.len, 0);
+                auto nbytes = write(my_data->other_td->sockfd, &frame, sizeof(struct can_frame));
+                printf("Wrote %d bytes\n", nbytes);
+                std::perror("send");
+            }
             break;
         case CANFD_MTU:
             // TODO: Should make an example for CAN FD
@@ -277,6 +285,7 @@ int main(int argc, char** argv) {
     int rc;
 
     td1.thread_id = 1;
+    td1.other_td = &td2;
 
     usleep(100);
 
@@ -290,6 +299,7 @@ int main(int argc, char** argv) {
     std::cout << "Started1:" << td1.thread_id << ":" << td1.interface << std::endl;
 
     td2.thread_id = 2;
+    td2.other_td = &td1;
 
     usleep(100);
 
