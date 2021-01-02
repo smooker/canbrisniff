@@ -13,4 +13,31 @@ https://github.com/autosportlabs/OBD2CAN
 nice french
 https://www.lesamisdelaprog.com/lecture-ecriture-ecus/5925-tuto-bdm-sid803-803a-psa.html
 https://www.lesamisdelaprog.com/lecture-ecriture-ecus/2179-bdm-motorola-mpcxxx-galletto-2-bdm100-dimsport-cmd.html
+https://www.lesamisdelaprog.com/pinout-boot-mode-ecus/2065-siemens-sid803-bdm-pin.html
+
+sid803/a dumps
+https://www.digital-kaos.co.uk/forums/showthread.php/612616-VOLVO-V50-CEM-SID-803A-SYNCHRO
+https://www.digital-kaos.co.uk/forums/showthread.php/866313-VOLVO-S40-ECU-CEM-SYNC?highlight=sid803a+v50
+
+chips
+chrome-extension://oemmndcbldboiebfnladdacbdfmadadm/https://www.nxp.com/docs/en/data-sheet/MC33399.pdf
+chrome-extension://oemmndcbldboiebfnladdacbdfmadadm/https://www.nxp.com/docs/en/data-sheet/TJA1050.pdf
+
+
+
+interesting 
+chrome-extension://oemmndcbldboiebfnladdacbdfmadadm/http://illmatics.com/car_hacking.pdf
+
+
+ktag/kess pinout
+http://ktagecu.blogspot.com/2016/04/how-to-solve-kess-v2-bootloader-adapter.html
+
+
+tuning
+http://www.tunerpro.net/downloadApp.htm
+
+
+other
+while true; do cansend can0 0C9#0080000000101000; sleep 0.002; done
+
 
