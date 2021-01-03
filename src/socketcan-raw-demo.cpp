@@ -41,6 +41,8 @@ struct thread_data {
     const char* interface;
     int must_exit=0;
     thread_data *other_td;
+    canfd_frame frame2send;
+    int sendit = 0;
 };
 
 thread_data td1;
@@ -66,7 +68,6 @@ void *listener(void *data)
     my_data = (struct thread_data *) data;
 
     struct ifreq ifr;
-    int sockfd;
 
     printf("listener: %s\n", my_data->interface);
 
@@ -74,7 +75,7 @@ void *listener(void *data)
 
     // Open the CAN network interface
     my_data->sockfd = ::socket(PF_CAN, SOCK_RAW, CAN_RAW);
-    if (-1 == sockfd) {
+    if (-1 == my_data->sockfd) {
         std::perror("socket");
         exit(10);
     }
@@ -126,25 +127,27 @@ void *listener(void *data)
     char buf[16]; /* max length */
 
     while(my_data->must_exit == 0) {
-        iov.iov_len = sizeof(frame);
+        iov.iov_len = sizeof(frame);            //bug ???
         msg.msg_namelen = sizeof(addr);
         msg.msg_controllen = sizeof(ctrlmsg);
         msg.msg_flags = 0;
+        msg.msg_iovlen = 1;
 
         //here loop
-        auto numBytes = recvmsg(my_data->sockfd, &msg, 0);
+        auto numBytes = recvmsg(my_data->sockfd, &msg, MSG_DONTWAIT);
+//        auto numBytes = recvmsg(my_data->sockfd, &msg, 0);
+
+        printf("%d:%s:R: ALIVE\n", my_data->thread_id, my_data->interface);
 
         switch (numBytes) {
         case CAN_MTU:
             sprint_canframe(buf, &frame, 1, 16);
-    //        std::this_thread::sleep_for (std::chrono::seconds(1));
-            printf("%d:%s:%s\n", my_data->thread_id, my_data->interface, buf);
+            printf("%d:%s:R:%s\n", my_data->thread_id, my_data->interface, buf);
             {
-//                int nbytes = sendmsg(my_data->other_td->sockfd, &msg, 0);
-//                int nbytes = send(my_data->other_td->sockfd, &frame, frame.len, 0);
-                auto nbytes = write(my_data->other_td->sockfd, &frame, sizeof(struct can_frame));
-                printf("Wrote %d bytes\n", nbytes);
-                std::perror("send");
+                //here
+                memcpy(&my_data->frame2send, &frame, sizeof (can_frame));
+                my_data->sendit = 1;
+                //dali da chakame za izprashtane ???
             }
             break;
         case CANFD_MTU:
@@ -162,9 +165,29 @@ void *listener(void *data)
         default:
             continue;
         }
+        if (my_data->other_td->sendit == 1 )
+        {
+              sprint_canframe(buf, &my_data->other_td->frame2send, 1, 16);
+              printf("%d:%s:W:%s\n", my_data->thread_id, my_data->interface, buf);
+//                iov.iov_len = frame.len;
+//                msg.msg_name = NULL;
+//                msg.msg_namelen = 0;
+//                iov.iov_len = frame.len;
 
+//                int nbytes = sendmsg(my_data->other_td->sockfd, &msg, 0);
+//                int nbytes = write(my_data->other_td->sockfd, &frame, sizeof(struct can_frame));
+            auto nbytes = write(my_data->sockfd, &my_data->other_td->frame2send, sizeof(struct can_frame));
+//                printf("Wrote %d bytes\n", nbytes);
+            if (nbytes < 0 ) {
+                char msg2[30];
+                auto dfg = sprintf((char*)&msg2, "%d:sen0", my_data->thread_id);
+                std::perror(msg2);
+                my_data->must_exit = 1;
+            }
+            my_data->other_td->sendit = 0;
+        }
 
-//        usleep(200);
+        usleep(200);
 //        pthread_exit(NULL);
     }
 
@@ -298,6 +321,8 @@ int main(int argc, char** argv) {
 
     std::cout << "Started1:" << td1.thread_id << ":" << td1.interface << std::endl;
 
+//    pthread_join( thread1, NULL);
+
     td2.thread_id = 2;
     td2.other_td = &td1;
 
@@ -311,6 +336,8 @@ int main(int argc, char** argv) {
     }
 
     std::cout << "Started2:" << td2.thread_id << ":" << td2.interface << std::endl;
+
+//    pthread_join( thread2, NULL);
 
 //		/* these settings may be modified by recvmsg() */
 //		iov.iov_len = sizeof(frame);
